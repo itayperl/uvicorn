@@ -256,6 +256,7 @@ class HttpToolsProtocol(asyncio.Protocol):
             app = self.app
 
         existing_cycle = self.cycle
+        self.message_event = asyncio.Event()
         self.cycle = RequestResponseCycle(
             scope=self.scope,
             transport=self.transport,
@@ -525,6 +526,7 @@ class RequestResponseCycle:
                 if self.expected_content_length != 0:
                     raise RuntimeError("Response content shorter than Content-Length")
                 self.response_complete = True
+                self.message_event.set()
                 if not self.keep_alive:
                     self.transport.close()
                 self.on_response()
